@@ -1,0 +1,14 @@
+{
+    "id": "{FCC297AA-0414-29FD-DD5E-3A48514D7D4E}",
+    "name": "Statusliste",
+    "type": 3,
+    "vendor": "Ulrich Bittner",
+    "aliases": [
+        "Statusliste"
+    ],
+    "url": "https://github.com/ubittner/Statusliste/tree/main/Statusliste",
+    "parentRequirements": [],
+    "childRequirements": [],
+    "implemented": [],
+    "prefix": "SL"
+}

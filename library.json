@@ -1,0 +1,12 @@
+{
+    "id": "{7970AD78-5D4E-9DF8-6B05-089B56F4D608}",
+    "name": "Statusliste",
+    "author": "Ulrich Bittner",
+    "url": "https://github.com/ubittner/Statusliste",
+    "compatibility": {
+        "version": "6.1"
+    },
+    "version": "1.0",
+    "build": 1,
+    "date": 1702540615
+}
