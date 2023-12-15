@@ -8,6 +8,7 @@
  * @license       https://creativecommons.org/licenses/by-nc-sa/4.0/ CC BY-NC-SA 4.0
  */
 
+/** @noinspection SpellCheckingInspection */
 /** @noinspection DuplicatedCode */
 
 declare(strict_types=1);
@@ -51,7 +52,7 @@ trait SL_ConfigurationForm
     public function ModifyButton(string $Field, string $Caption, int $ObjectID): void
     {
         $state = false;
-        if ($ObjectID > 1 && @IPS_ObjectExists($ObjectID)) { //0 = main category, 1 = none
+        if ($ObjectID > 1 && @IPS_ObjectExists($ObjectID)) {
             $state = true;
         }
         $this->UpdateFormField($Field, 'caption', $Caption);
@@ -75,7 +76,7 @@ trait SL_ConfigurationForm
         if (array_key_exists(0, $primaryCondition)) {
             if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                 $id = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                if ($id > 1 && @IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                if ($id > 1 && @IPS_ObjectExists($id)) {
                     $state = true;
                 }
             }
@@ -88,7 +89,7 @@ trait SL_ConfigurationForm
     public function ModifyActualVariableStatesConfigurationButton(string $Field, int $VariableID): void
     {
         $state = false;
-        if ($VariableID > 1 && @IPS_ObjectExists($VariableID)) { //0 = main category, 1 = none
+        if ($VariableID > 1 && @IPS_ObjectExists($VariableID)) {
             $state = true;
         }
         $this->UpdateFormField($Field, 'caption', 'ID ' . $VariableID . ' Bearbeiten');
@@ -237,23 +238,27 @@ trait SL_ConfigurationForm
         //Trigger list
         $triggerListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-        $amountVariables = count($variables) + 1;
+        $amountRows = count($variables) + 1;
+        $amountVariables = count($variables);
         foreach ($variables as $variable) {
             $sensorID = 0;
+            $primaryTriggerValue = '';
             $variableLocation = '';
             if ($variable['PrimaryCondition'] != '') {
                 $primaryCondition = json_decode($variable['PrimaryCondition'], true);
                 if (array_key_exists(0, $primaryCondition)) {
                     if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                         $sensorID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
+                        $primaryTriggerValue = GetValueFormattedEx($sensorID, $primaryCondition[0]['rules']['variable'][0]['value']);
                     }
                 }
             }
             //Check conditions first
             $conditions = true;
-            if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) { //0 = main category, 1 = none
+            if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) {
                 $conditions = false;
             }
+            $secondaryTriggerValues = 'nein';
             if ($variable['SecondaryCondition'] != '') {
                 $secondaryConditions = json_decode($variable['SecondaryCondition'], true);
                 if (array_key_exists(0, $secondaryConditions)) {
@@ -261,8 +266,9 @@ trait SL_ConfigurationForm
                         $rules = $secondaryConditions[0]['rules']['variable'];
                         foreach ($rules as $rule) {
                             if (array_key_exists('variableID', $rule)) {
+                                $secondaryTriggerValues = 'ja';
                                 $id = $rule['variableID'];
-                                if ($id <= 1 || !@IPS_ObjectExists($id)) { //0 = main category, 1 = none
+                                if ($id <= 1 || !@IPS_ObjectExists($id)) {
                                     $conditions = false;
                                 }
                             }
@@ -278,7 +284,7 @@ trait SL_ConfigurationForm
                     $rowColor = '#DFDFDF'; //grey
                 }
             }
-            $triggerListValues[] = ['SensorID' => $sensorID, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
+            $triggerListValues[] = ['SensorID' => $sensorID, 'PrimaryTriggerValue' => $primaryTriggerValue, 'SecondaryTriggerValues' => $secondaryTriggerValues, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
         }
 
         $form['elements'][] =
@@ -468,7 +474,7 @@ trait SL_ConfigurationForm
                         'type'     => 'List',
                         'name'     => 'TriggerList',
                         'caption'  => 'Auslöser',
-                        'rowCount' => $amountVariables,
+                        'rowCount' => $amountRows,
                         'add'      => true,
                         'delete'   => true,
                         'sort'     => [
@@ -517,6 +523,20 @@ trait SL_ConfigurationForm
                                 'edit'    => [
                                     'type' => 'ValidationTextBox'
                                 ]
+                            ],
+                            [
+                                'caption' => 'Primäre Bedingung',
+                                'name'    => 'PrimaryTriggerValue',
+                                'width'   => '250px',
+                                'add'     => '',
+                                'save'    => false
+                            ],
+                            [
+                                'caption' => 'Weitere Bedingungen',
+                                'name'    => 'SecondaryTriggerValues',
+                                'width'   => '200px',
+                                'add'     => '',
+                                'save'    => false
                             ],
                             [
                                 'caption' => ' ',
@@ -587,6 +607,10 @@ trait SL_ConfigurationForm
                             ]
                         ],
                         'values' => $triggerListValues
+                    ],
+                    [
+                        'type'    => 'Label',
+                        'caption' => 'Anzahl Auslöser: ' . $amountVariables
                     ],
                     [
                         'type'     => 'OpenObjectButton',
