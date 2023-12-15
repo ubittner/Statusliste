@@ -237,6 +237,7 @@ trait SL_ConfigurationForm
 
         //Trigger list
         $triggerListValues = [];
+        $variableLinksListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         $amountRows = count($variables) + 1;
         $amountVariables = count($variables);
@@ -285,6 +286,7 @@ trait SL_ConfigurationForm
                 }
             }
             $triggerListValues[] = ['SensorID' => $sensorID, 'PrimaryTriggerValue' => $primaryTriggerValue, 'SecondaryTriggerValues' => $secondaryTriggerValues, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
+            $variableLinksListValues[] = ['SensorID' => $sensorID, 'VariableLocation' => $variableLocation, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
         }
 
         $form['elements'][] =
@@ -618,6 +620,88 @@ trait SL_ConfigurationForm
                         'caption'  => 'Bearbeiten',
                         'visible'  => false,
                         'objectID' => 0
+                    ],
+                    [
+                        'type'    => 'PopupButton',
+                        'caption' => 'Verknüpfung erstellen',
+                        'popup'   => [
+                            'caption' => 'Variablenverknüpfungen wirklich erstellen?',
+                            'items'   => [
+                                [
+                                    'type'    => 'SelectCategory',
+                                    'name'    => 'LinkCategory',
+                                    'caption' => 'Kategorie',
+                                    'width'   => '610px'
+                                ],
+                                [
+                                    'type'     => 'List',
+                                    'name'     => 'VariableLinkList',
+                                    'caption'  => 'Variablen',
+                                    'add'      => false,
+                                    'rowCount' => $amountVariables,
+                                    'sort'     => [
+                                        'column'    => 'SensorID',
+                                        'direction' => 'ascending'
+                                    ],
+                                    'columns' => [
+                                        [
+                                            'caption' => 'Übernehmen',
+                                            'name'    => 'Use',
+                                            'width'   => '100px',
+                                            'add'     => false,
+                                            'edit'    => [
+                                                'type' => 'CheckBox'
+                                            ]
+                                        ],
+                                        [
+                                            'name'    => 'SensorID',
+                                            'caption' => 'ID',
+                                            'width'   => '80px',
+                                            'save'    => false
+                                        ],
+                                        [
+                                            'caption' => 'Objektbaum',
+                                            'name'    => 'VariableLocation',
+                                            'width'   => '350px',
+                                            'add'     => '',
+                                            'save'    => false
+                                        ],
+                                        [
+                                            'name'    => 'Designation',
+                                            'caption' => 'Name',
+                                            'width'   => '400px',
+                                            'save'    => false
+                                        ],
+                                        [
+                                            'name'    => 'Comment',
+                                            'caption' => 'Bemerkung',
+                                            'width'   => '400px',
+                                            'save'    => false
+                                        ]
+                                    ],
+                                    'values' => $variableLinksListValues,
+                                ],
+                                [
+                                    'type'    => 'Button',
+                                    'caption' => 'Erstellen',
+                                    'onClick' => self::MODULE_PREFIX . '_CreateVariableLinks($id, $LinkCategory, $VariableLinkList);'
+                                ],
+                                [
+                                    'type'    => 'ProgressBar',
+                                    'name'    => 'VariableLinkProgress',
+                                    'caption' => 'Fortschritt',
+                                    'minimum' => 0,
+                                    'maximum' => 100,
+                                    'visible' => false
+                                ],
+                                [
+                                    'type'    => 'Label',
+                                    'name'    => 'VariableLinkProgressInfo',
+                                    'caption' => '',
+                                    'visible' => false
+                                ]
+                            ]
+                        ]
                     ]
                 ]
             ];
@@ -691,46 +775,6 @@ trait SL_ConfigurationForm
                 'caption' => ' '
             ];
 
-        //Variable link list
-        $variableLinksListValues = [];
-        $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
-        $amountVariables = count($variables);
-        foreach ($variables as $variable) {
-            $sensorID = 0;
-            if ($variable['PrimaryCondition'] != '') {
-                $primaryCondition = json_decode($variable['PrimaryCondition'], true);
-                if (array_key_exists(0, $primaryCondition)) {
-                    if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
-                        $sensorID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                    }
-                }
-            }
-            //Check conditions first
-            $conditions = true;
-            if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) {
-                $conditions = false;
-            }
-            if ($variable['SecondaryCondition'] != '') {
-                $secondaryConditions = json_decode($variable['SecondaryCondition'], true);
-                if (array_key_exists(0, $secondaryConditions)) {
-                    if (array_key_exists('rules', $secondaryConditions[0])) {
-                        $rules = $secondaryConditions[0]['rules']['variable'];
-                        foreach ($rules as $rule) {
-                            if (array_key_exists('variableID', $rule)) {
-                                $id = $rule['variableID'];
-                                if ($id <= 1 || !@IPS_ObjectExists($id)) {
-                                    $conditions = false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            if ($conditions) {
-                $variableLinksListValues[] = ['SensorID' => $sensorID, 'VariableLocation' => IPS_GetLocation($sensorID), 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
-            }
-        }
-
         //Registered references
         $registeredReferences = [];
         $references = $this->GetReferenceList();
@@ -790,92 +834,6 @@ trait SL_ConfigurationForm
             'type'    => 'ExpansionPanel',
             'caption' => 'Entwicklerbereich',
             'items'   => [
-                [
-                    'type'    => 'PopupButton',
-                    'caption' => 'Verknüpfung erstellen',
-                    'popup'   => [
-                        'caption' => 'Variablenverknüpfungen wirklich erstellen?',
-                        'items'   => [
-                            [
-                                'type'    => 'SelectCategory',
-                                'name'    => 'LinkCategory',
-                                'caption' => 'Kategorie',
-                                'width'   => '610px'
-                            ],
-                            [
-                                'type'     => 'List',
-                                'name'     => 'VariableLinkList',
-                                'caption'  => 'Variablen',
-                                'add'      => false,
-                                'rowCount' => $amountVariables,
-                                'sort'     => [
-                                    'column'    => 'SensorID',
-                                    'direction' => 'ascending'
-                                ],
-                                'columns' => [
-                                    [
-                                        'caption' => 'Übernehmen',
-                                        'name'    => 'Use',
-                                        'width'   => '100px',
-                                        'add'     => false,
-                                        'edit'    => [
-                                            'type' => 'CheckBox'
-                                        ]
-                                    ],
-                                    [
-                                        'name'    => 'SensorID',
-                                        'caption' => 'ID',
-                                        'width'   => '80px',
-                                        'save'    => false
-                                    ],
-                                    [
-                                        'caption' => 'Objektbaum',
-                                        'name'    => 'VariableLocation',
-                                        'width'   => '350px',
-                                        'add'     => '',
-                                        'save'    => false
-                                    ],
-                                    [
-                                        'name'    => 'Designation',
-                                        'caption' => 'Name',
-                                        'width'   => '400px',
-                                        'save'    => false
-                                    ],
-                                    [
-                                        'name'    => 'Comment',
-                                        'caption' => 'Bemerkung',
-                                        'width'   => '400px',
-                                        'save'    => false
-                                    ]
-                                ],
-                                'values' => $variableLinksListValues,
-                            ],
-                            [
-                                'type'    => 'Button',
-                                'caption' => 'Erstellen',
-                                'onClick' => self::MODULE_PREFIX . '_CreateVariableLinks($id, $LinkCategory, $VariableLinkList);'
-                            ],
-                            [
-                                'type'    => 'ProgressBar',
-                                'name'    => 'VariableLinkProgress',
-                                'caption' => 'Fortschritt',
-                                'minimum' => 0,
-                                'maximum' => 100,
-                                'visible' => false
-                            ],
-                            [
-                                'type'    => 'Label',
-                                'name'    => 'VariableLinkProgressInfo',
-                                'caption' => '',
-                                'visible' => false
-                            ]
-                        ]
-                    ]
-                ],
-                [
-                    'type'    => 'Label',
-                    'caption' => ' '
-                ],
                 [
                     'type'    => 'Label',
                     'caption' => 'Registrierte Referenzen',

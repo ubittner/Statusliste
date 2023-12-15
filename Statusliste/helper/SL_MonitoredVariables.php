@@ -416,7 +416,18 @@ trait SL_MonitoredVariables
         $property = $reflection->getProperty('array');
         $property->setAccessible(true);
         $variables = $property->getValue($ListValues);
-        $maximumVariables = count($variables);
+        $amountVariables = 0;
+        foreach ($variables as $variable) {
+            if ($variable['Use']) {
+                $amountVariables++;
+            }
+        }
+        if ($amountVariables == 0) {
+            $this->UpdateFormField('InfoMessage', 'visible', true);
+            $this->UpdateFormField('InfoMessageLabel', 'caption', 'Es wurden keine Variablen ausgewählt!');
+            return;
+        }
+        $maximumVariables = $amountVariables;
         $this->UpdateFormField('VariableLinkProgress', 'minimum', 0);
         $this->UpdateFormField('VariableLinkProgress', 'maximum', $maximumVariables);
         $passedVariables = 0;
@@ -495,7 +506,11 @@ trait SL_MonitoredVariables
         }
         $this->UpdateFormField('VariableLinkProgress', 'visible', false);
         $this->UpdateFormField('VariableLinkProgressInfo', 'visible', false);
-        $this->UIShowMessage('Die Variablenverknüpfungen wurden erfolgreich erstellt!');
+        $infoText = 'Die Variablenverknüpfung wurde erfolgreich erstellt!';
+        if ($amountVariables > 1) {
+            $infoText = 'Die Variablenverknüpfungen wurden erfolgreich erstellt!';
+        }
+        $this->UIShowMessage($infoText);
     }
 
     /**
