@@ -53,7 +53,7 @@ class Statusliste extends IPSModule
 
         //Automatic status update
         $this->RegisterPropertyBoolean('AutomaticStatusUpdate', false);
-        $this->RegisterPropertyInteger('StatusUpdateInterval', 60);
+        $this->RegisterPropertyInteger('StatusUpdateInterval', 900);
 
         //Visualisation
         $this->RegisterPropertyBoolean('EnableStatus', true);

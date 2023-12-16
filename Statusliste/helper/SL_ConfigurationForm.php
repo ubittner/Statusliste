@@ -645,7 +645,7 @@ trait SL_ConfigurationForm
                                     ],
                                     'columns' => [
                                         [
-                                            'caption' => 'Übernehmen',
+                                            'caption' => 'Auswahl',
                                             'name'    => 'Use',
                                             'width'   => '100px',
                                             'add'     => false,
