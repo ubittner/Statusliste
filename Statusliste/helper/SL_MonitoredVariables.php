@@ -205,9 +205,9 @@ trait SL_MonitoredVariables
             return;
         }
         $determinedVariables = array_values($determinedVariables);
-        $this->UpdateFormField('DeterminedVariableList', 'visible', true);
         $this->UpdateFormField('DeterminedVariableList', 'rowCount', count($determinedVariables));
         $this->UpdateFormField('DeterminedVariableList', 'values', json_encode($determinedVariables));
+        $this->UpdateFormField('DeterminedVariableList', 'visible', true);
         $this->UpdateFormField('ApplyPreVariableTriggerValues', 'visible', true);
     }
 
@@ -340,6 +340,7 @@ trait SL_MonitoredVariables
     public function GetActualVariableStates(): void
     {
         $this->SendDebug(__FUNCTION__, 'wird ausgeführt', 0);
+        $this->UpdateStatus();
         $this->UpdateFormField('ActualVariableStateConfigurationButton', 'visible', false);
         $actualVariableStates = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
@@ -392,9 +393,9 @@ trait SL_MonitoredVariables
         if ($amount == 0) {
             $amount = 1;
         }
-        $this->UpdateFormField('ActualVariableStateList', 'visible', true);
         $this->UpdateFormField('ActualVariableStateList', 'rowCount', $amount);
         $this->UpdateFormField('ActualVariableStateList', 'values', json_encode($actualVariableStates));
+        $this->UpdateFormField('ActualVariableStateList', 'visible', true);
     }
 
     /**

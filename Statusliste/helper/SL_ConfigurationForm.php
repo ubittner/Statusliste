@@ -243,14 +243,11 @@ trait SL_ConfigurationForm
         $amountVariables = count($variables);
         foreach ($variables as $variable) {
             $sensorID = 0;
-            $primaryTriggerValue = '';
-            $variableLocation = '';
             if ($variable['PrimaryCondition'] != '') {
                 $primaryCondition = json_decode($variable['PrimaryCondition'], true);
                 if (array_key_exists(0, $primaryCondition)) {
                     if (array_key_exists(0, $primaryCondition[0]['rules']['variable'])) {
                         $sensorID = $primaryCondition[0]['rules']['variable'][0]['variableID'];
-                        $primaryTriggerValue = GetValueFormattedEx($sensorID, $primaryCondition[0]['rules']['variable'][0]['value']);
                     }
                 }
             }
@@ -259,7 +256,6 @@ trait SL_ConfigurationForm
             if ($sensorID <= 1 || !@IPS_ObjectExists($sensorID)) {
                 $conditions = false;
             }
-            $secondaryTriggerValues = 'nein';
             if ($variable['SecondaryCondition'] != '') {
                 $secondaryConditions = json_decode($variable['SecondaryCondition'], true);
                 if (array_key_exists(0, $secondaryConditions)) {
@@ -267,7 +263,6 @@ trait SL_ConfigurationForm
                         $rules = $secondaryConditions[0]['rules']['variable'];
                         foreach ($rules as $rule) {
                             if (array_key_exists('variableID', $rule)) {
-                                $secondaryTriggerValues = 'ja';
                                 $id = $rule['variableID'];
                                 if ($id <= 1 || !@IPS_ObjectExists($id)) {
                                     $conditions = false;
@@ -279,14 +274,13 @@ trait SL_ConfigurationForm
             }
             $rowColor = '#FFC0C0'; //red
             if ($conditions) {
-                $variableLocation = IPS_GetLocation($sensorID);
                 $rowColor = '#C0FFC0'; //light green
                 if (!$variable['Use']) {
                     $rowColor = '#DFDFDF'; //grey
                 }
             }
-            $triggerListValues[] = ['SensorID' => $sensorID, 'PrimaryTriggerValue' => $primaryTriggerValue, 'SecondaryTriggerValues' => $secondaryTriggerValues, 'VariableLocation' => $variableLocation, 'rowColor' => $rowColor];
-            $variableLinksListValues[] = ['SensorID' => $sensorID, 'VariableLocation' => $variableLocation, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
+            $triggerListValues[] = ['rowColor' => $rowColor];
+            $variableLinksListValues[] = ['SensorID' => $sensorID, 'Designation' => $variable['Designation'], 'Comment' => $variable['Comment']];
         }
 
         $form['elements'][] =
@@ -373,7 +367,7 @@ trait SL_ConfigurationForm
                                     'rowCount' => 15,
                                     'delete'   => true,
                                     'sort'     => [
-                                        'column'    => 'ID',
+                                        'column'    => 'Location',
                                         'direction' => 'ascending'
                                     ],
                                     'columns' => [
@@ -494,25 +488,11 @@ trait SL_ConfigurationForm
                                 ]
                             ],
                             [
-                                'caption' => 'ID',
-                                'name'    => 'SensorID',
-                                'width'   => '100px',
-                                'add'     => '',
-                                'save'    => false,
-                                'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);'
-                            ],
-                            [
-                                'caption' => 'Objektbaum',
-                                'name'    => 'VariableLocation',
-                                'width'   => '350px',
-                                'add'     => '',
-                                'save'    => false
-                            ],
-                            [
                                 'caption' => 'Name',
                                 'name'    => 'Designation',
                                 'width'   => '400px',
                                 'add'     => '',
+                                'onClick' => self::MODULE_PREFIX . '_ModifyTriggerListButton($id, "TriggerListConfigurationButton", $TriggerList["PrimaryCondition"]);',
                                 'edit'    => [
                                     'type' => 'ValidationTextBox'
                                 ]
@@ -528,80 +508,18 @@ trait SL_ConfigurationForm
                             ],
                             [
                                 'caption' => 'Primäre Bedingung',
-                                'name'    => 'PrimaryTriggerValue',
-                                'width'   => '250px',
-                                'add'     => '',
-                                'save'    => false
-                            ],
-                            [
-                                'caption' => 'Weitere Bedingungen',
-                                'name'    => 'SecondaryTriggerValues',
-                                'width'   => '200px',
-                                'add'     => '',
-                                'save'    => false
-                            ],
-                            [
-                                'caption' => ' ',
-                                'name'    => 'SpacerPrimaryCondition',
-                                'width'   => '200px',
-                                'add'     => '',
-                                'visible' => false,
-                                'save'    => false,
-                                'edit'    => [
-                                    'type' => 'Label'
-                                ]
-                            ],
-                            [
-                                'caption' => 'Bedingung:',
-                                'name'    => 'LabelPrimaryCondition',
-                                'width'   => '200px',
-                                'add'     => '',
-                                'visible' => false,
-                                'save'    => false,
-                                'edit'    => [
-                                    'type' => 'Label',
-                                    'bold' => true
-                                ]
-                            ],
-                            [
-                                'caption' => ' ',
                                 'name'    => 'PrimaryCondition',
-                                'width'   => '200px',
+                                'width'   => '1000px',
                                 'add'     => '',
-                                'visible' => false,
                                 'edit'    => [
                                     'type' => 'SelectCondition'
                                 ]
                             ],
                             [
-                                'caption' => ' ',
-                                'name'    => 'SpacerSecondaryCondition',
-                                'width'   => '200px',
-                                'add'     => '',
-                                'visible' => false,
-                                'save'    => false,
-                                'edit'    => [
-                                    'type' => 'Label'
-                                ]
-                            ],
-                            [
-                                'caption' => 'Weitere Bedingung(en):',
-                                'name'    => 'LabelSecondaryCondition',
-                                'width'   => '200px',
-                                'add'     => '',
-                                'visible' => false,
-                                'save'    => false,
-                                'edit'    => [
-                                    'type' => 'Label',
-                                    'bold' => true
-                                ]
-                            ],
-                            [
-                                'caption' => ' ',
+                                'caption' => 'Weitere Bedingungen',
                                 'name'    => 'SecondaryCondition',
-                                'width'   => '200px',
+                                'width'   => '1000px',
                                 'add'     => '',
-                                'visible' => false,
                                 'edit'    => [
                                     'type'  => 'SelectCondition',
                                     'multi' => true
@@ -613,13 +531,6 @@ trait SL_ConfigurationForm
                     [
                         'type'    => 'Label',
                         'caption' => 'Anzahl Auslöser: ' . $amountVariables
-                    ],
-                    [
-                        'type'     => 'OpenObjectButton',
-                        'name'     => 'TriggerListConfigurationButton',
-                        'caption'  => 'Bearbeiten',
-                        'visible'  => false,
-                        'objectID' => 0
                     ],
                     [
                         'type'    => 'PopupButton',
@@ -640,7 +551,7 @@ trait SL_ConfigurationForm
                                     'add'      => false,
                                     'rowCount' => $amountVariables,
                                     'sort'     => [
-                                        'column'    => 'SensorID',
+                                        'column'    => 'Designation',
                                         'direction' => 'ascending'
                                     ],
                                     'columns' => [
@@ -657,13 +568,6 @@ trait SL_ConfigurationForm
                                             'name'    => 'SensorID',
                                             'caption' => 'ID',
                                             'width'   => '80px',
-                                            'save'    => false
-                                        ],
-                                        [
-                                            'caption' => 'Objektbaum',
-                                            'name'    => 'VariableLocation',
-                                            'width'   => '350px',
-                                            'add'     => '',
                                             'save'    => false
                                         ],
                                         [
@@ -702,6 +606,13 @@ trait SL_ConfigurationForm
                                 ]
                             ]
                         ]
+                    ],
+                    [
+                        'type'     => 'OpenObjectButton',
+                        'name'     => 'TriggerListConfigurationButton',
+                        'caption'  => 'Bearbeiten',
+                        'visible'  => false,
+                        'objectID' => 0
                     ]
                 ]
             ];
@@ -756,24 +667,6 @@ trait SL_ConfigurationForm
         ];
 
         ########## Actions
-
-        $form['actions'][] =
-            [
-                'type'  => 'RowLayout',
-                'items' => [
-                    [
-                        'type'    => 'Button',
-                        'caption' => 'Status aktualisieren',
-                        'onClick' => self::MODULE_PREFIX . '_UpdateStatus($id);' . self::MODULE_PREFIX . '_UIShowMessage($id, "Status wurde aktualisiert!");'
-                    ],
-                ]
-            ];
-
-        $form['actions'][] =
-            [
-                'type'    => 'Label',
-                'caption' => ' '
-            ];
 
         //Registered references
         $registeredReferences = [];
