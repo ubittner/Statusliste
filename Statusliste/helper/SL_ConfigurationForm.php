@@ -240,6 +240,9 @@ trait SL_ConfigurationForm
         $variableLinksListValues = [];
         $variables = json_decode($this->ReadPropertyString('TriggerList'), true);
         $amountRows = count($variables) + 1;
+        if ($amountRows == 1) {
+            $amountRows = 3;
+        }
         $amountVariables = count($variables);
         foreach ($variables as $variable) {
             $sensorID = 0;
@@ -500,7 +503,7 @@ trait SL_ConfigurationForm
                             [
                                 'caption' => 'Bemerkung',
                                 'name'    => 'Comment',
-                                'width'   => '200px',
+                                'width'   => '300px',
                                 'add'     => '',
                                 'edit'    => [
                                     'type' => 'ValidationTextBox'
@@ -671,7 +674,10 @@ trait SL_ConfigurationForm
         //Registered references
         $registeredReferences = [];
         $references = $this->GetReferenceList();
-        $amountReferences = count($references) + 1;
+        $amountReferences = count($references);
+        if ($amountReferences == 0) {
+            $amountReferences = 3;
+        }
         foreach ($references as $reference) {
             $name = 'Objekt #' . $reference . ' existiert nicht';
             $location = '';
@@ -691,7 +697,10 @@ trait SL_ConfigurationForm
         //Registered messages
         $registeredMessages = [];
         $messages = $this->GetMessageList();
-        $amountMessages = count($messages) + 1;
+        $amountMessages = count($messages);
+        if ($amountMessages == 0) {
+            $amountMessages = 3;
+        }
         foreach ($messages as $id => $messageID) {
             $name = 'Objekt #' . $id . ' existiert nicht';
             $location = '';
@@ -746,7 +755,7 @@ trait SL_ConfigurationForm
                             'caption' => 'ID',
                             'name'    => 'ObjectID',
                             'width'   => '150px',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " aufrufen", $RegisteredReferences["ObjectID"]);'
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredReferencesConfigurationButton", "ID " . $RegisteredReferences["ObjectID"] . " bearbeiten", $RegisteredReferences["ObjectID"]);'
                         ],
                         [
                             'caption' => 'Name',
@@ -764,7 +773,7 @@ trait SL_ConfigurationForm
                 [
                     'type'     => 'OpenObjectButton',
                     'name'     => 'RegisteredReferencesConfigurationButton',
-                    'caption'  => 'Aufrufen',
+                    'caption'  => 'Bearbeiten',
                     'visible'  => false,
                     'objectID' => 0
                 ],
@@ -791,7 +800,7 @@ trait SL_ConfigurationForm
                             'caption' => 'ID',
                             'name'    => 'ObjectID',
                             'width'   => '150px',
-                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredMessagesConfigurationButton", "ID " . $RegisteredMessages["ObjectID"] . " aufrufen", $RegisteredMessages["ObjectID"]);'
+                            'onClick' => self::MODULE_PREFIX . '_ModifyButton($id, "RegisteredMessagesConfigurationButton", "ID " . $RegisteredMessages["ObjectID"] . " bearbeiten", $RegisteredMessages["ObjectID"]);'
                         ],
                         [
                             'caption' => 'Name',
@@ -819,7 +828,7 @@ trait SL_ConfigurationForm
                 [
                     'type'     => 'OpenObjectButton',
                     'name'     => 'RegisteredMessagesConfigurationButton',
-                    'caption'  => 'Aufrufen',
+                    'caption'  => 'Bearbeiten',
                     'visible'  => false,
                     'objectID' => 0
                 ]
