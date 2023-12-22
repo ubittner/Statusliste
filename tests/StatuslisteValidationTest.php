@@ -8,7 +8,7 @@ use TestCaseSymconValidation;
 
 include_once __DIR__ . '/stubs/Validator.php';
 
-class StauslisteValidationTest extends TestCaseSymconValidation
+class StatuslisteValidationTest extends TestCaseSymconValidation
 {
     public function testValidateLibrary(): void
     {
