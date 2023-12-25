@@ -395,7 +395,6 @@ trait SL_MonitoredVariables
         }
         $this->UpdateFormField('ActualVariableStateList', 'rowCount', $amount);
         $this->UpdateFormField('ActualVariableStateList', 'values', json_encode($actualVariableStates));
-        $this->UpdateFormField('ActualVariableStateList', 'visible', true);
     }
 
     /**
